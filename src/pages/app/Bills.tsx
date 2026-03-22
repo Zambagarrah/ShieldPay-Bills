@@ -33,7 +33,7 @@ function AccountField({
     paybill:      { label: "Paybill Number + Account",  placeholder: "e.g. 888880  |  account: 0712345678", icon: Hash,      hint: "Enter paybill number. Account number is optional." },
     till:         { label: "Till Number",               placeholder: "e.g. 123456",                         icon: Hash,      hint: "M-Pesa Till number only — no account needed." },
     mobile_money: { label: "Phone Number",              placeholder: "e.g. 0712 345 678",                   icon: Phone,     hint: "Safaricom number to send money to." },
-    bank:         { label: "Bank Account Number",       placeholder: "e.g. 1234567890",                     icon: Building2, hint: "Full bank account number for PesaLink transfer." },
+    bank:         { label: "Bank Account Number",       placeholder: "e.g. 1234567890",                     icon: Building2, hint: "Just the account number — PesaLink routes it automatically to any Kenyan bank." },
     other:        { label: "Payment Reference",         placeholder: "Reference or account number",         icon: CreditCard, hint: "Any reference the supplier needs." },
   };
   const cfg = configs[supplierType] ?? configs.other;
@@ -119,7 +119,6 @@ function NewBillDrawer({
       supplier_id:      f.supplier_id,
       title:            f.title.trim(),
       amount:           Number(f.amount),
-      platform_fee:     0,
       payment_method:   method,
       account_override: f.account_override.trim() || null,
       notes:            f.notes.trim() || null,

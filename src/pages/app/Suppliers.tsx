@@ -256,20 +256,13 @@ function AddPayeeDrawer({ payee, businessId, onClose, onSaved }: {
                       {KE_BANKS.map(b => <option key={b}>{b}</option>)}
                     </select>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="field">
-                      <label className="label">Branch</label>
-                      <input className="input" placeholder="Westlands" value={f.bank_branch} onChange={e => set("bank_branch", e.target.value)}/>
-                    </div>
-                    <div className="field">
-                      <label className="label">Bank code</label>
-                      <input className="input font-mono" placeholder="01" value={f.bank_code} onChange={e => set("bank_code", e.target.value)}/>
-                    </div>
-                  </div>
                   <div className="field">
                     <label className="label">Account number *</label>
-                    <input className="input font-mono text-lg" placeholder="e.g. 1234567890"
+                    <input className="input font-mono text-xl tracking-widest" placeholder="e.g. 1234567890"
                       value={f.bank_account} onChange={e => set("bank_account", e.target.value)}/>
+                    <p className="text-xs text-blue-600 mt-1.5 bg-blue-50 rounded-lg px-3 py-2">
+                      🏦 Just the account number — PesaLink handles the routing automatically across all Kenyan banks.
+                    </p>
                   </div>
                 </div>
               )}

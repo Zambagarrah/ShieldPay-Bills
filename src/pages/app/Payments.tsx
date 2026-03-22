@@ -83,9 +83,9 @@ function NewPaymentDrawer({ businessId, plan, onClose, onSaved }: {
           <button onClick={onClose} className="btn-icon"><X size={18} /></button>
         </div>
         <div className="drawer-body">
-          <div className="field"><label className="label">Supplier *</label>
+          <div className="field"><label className="label">Who are you paying? *</label>
             <select className="select" value={f.supplier_id} onChange={e => set("supplier_id", e.target.value)}>
-              <option value="">Choose supplier…</option>
+              <option value="">Pick a payee…</option>
               {suppliers.map(s => <option key={s.id} value={s.id}>{SUPPLIER_TYPE_CONFIG[s.type].icon} {s.name}</option>)}
             </select>
           </div>
@@ -94,10 +94,7 @@ function NewPaymentDrawer({ businessId, plan, onClose, onSaved }: {
             <label className="label">Amount (KES) *</label>
             <input className="input-lg text-xl font-bold" type="number" placeholder="0" min={1} value={f.amount} onChange={e => set("amount", e.target.value)} />
             {f.amount && Number(f.amount) > 0 && (
-              <div className="mt-2 space-y-1.5">
-                <div className="flex justify-between text-sm bg-slate-50 rounded-xl px-4 py-2.5"><span className="text-slate-500">Amount</span><span className="font-bold">{fmtKES(Number(f.amount))}</span></div>
-                <div className="flex justify-between text-sm bg-primary/5 border border-primary/15 rounded-xl px-4 py-2.5"><span className="text-primary font-medium">Platform fee</span><span className="font-bold text-primary">KES {fee}</span></div>
-              </div>
+              <p className="text-sm font-bold text-primary mt-1.5 text-right">{fmtKES(Number(f.amount))}</p>
             )}
           </div>
           <div className="field">
@@ -112,7 +109,28 @@ function NewPaymentDrawer({ businessId, plan, onClose, onSaved }: {
               ))}
             </div>
           </div>
-          <div className="field"><label className="label">Account / ref number</label><input className="input font-mono" value={f.account_ref} onChange={e => set("account_ref", e.target.value)} /></div>
+          {/* Smart account field — label changes based on payment method */}
+          <div className="field">
+            <label className="label">
+              {f.payment_method === "pesalink"    ? "Bank Account Number" :
+               f.payment_method === "kcb_paybill" ? "Paybill + Account" :
+               f.payment_method === "kcb_till"    ? "Till Number" :
+               "Phone Number"}
+            </label>
+            <input className="input font-mono" 
+              placeholder={
+                f.payment_method === "pesalink"    ? "e.g. 1234567890" :
+                f.payment_method === "kcb_paybill" ? "e.g. 888880 (account optional)" :
+                f.payment_method === "kcb_till"    ? "e.g. 123456" :
+                "e.g. 0712 345 678"
+              }
+              value={f.account_ref} onChange={e => set("account_ref", e.target.value)} />
+            {f.payment_method === "pesalink" && (
+              <p className="text-xs text-blue-600 mt-1 bg-blue-50 rounded-lg px-3 py-1.5">
+                🏦 PesaLink transfers go directly to any Kenyan bank account number. No branch or code needed.
+              </p>
+            )}
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="field"><label className="label">Due date *</label><input className="input" type="date" value={f.due_date} min={today()} onChange={e => set("due_date", e.target.value)} /></div>
             <div className="field"><label className="label">Reference</label><input className="input" placeholder="INV-001" value={f.reference} onChange={e => set("reference", e.target.value)} /></div>
@@ -209,7 +227,6 @@ function DetailModal({ req, onClose, onAction }: {
           <div className="bg-primary/5 border border-primary/15 rounded-2xl p-5 text-center">
             <p className="text-xs font-bold uppercase tracking-wider text-primary/60 mb-1">Payment Amount</p>
             <p className="text-5xl font-black text-primary">{fmtKES(req.amount)}</p>
-            <p className="text-sm text-slate-400 mt-1">+ KES {req.platform_fee} platform fee</p>
           </div>
           <div className="grid grid-cols-2 gap-2">
             {details.map(([label, value]) => (

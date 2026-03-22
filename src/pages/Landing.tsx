@@ -17,7 +17,7 @@ const NAV_LINKS = [
 const STATS = [
   { value: "0%",    label: "Bill miss rate",       sub: "across all customers"    },
   { value: "6hrs",  label: "Saved per week",        sub: "per business on average" },
-  { value: "KES 0", label: "Per-transaction fees",  sub: "subscription only"       },
+  { value: "KES 0", label: "Extra charges",         sub: "subscription covers everything" },
   { value: "30",    label: "Day free trial",        sub: "no card required"        },
 ];
 
@@ -153,7 +153,7 @@ const FAQ = [
   },
   {
     q: "Are there any transaction fees?",
-    a: "No. ShieldPay is subscription-only. You pay your monthly plan and that's it. Zero per-transaction charges, ever.",
+    a: "ShieldPay charges a flat monthly subscription — KES 1,499 (Starter) or KES 2,999 (Growth). We add zero markup on top of payments. Your bank or Safaricom may charge their normal M-Pesa or PesaLink fees as they always do, but ShieldPay doesn't charge you anything extra per payment. One subscription, unlimited bill payments.",
   },
   {
     q: "Which payment methods are supported?",
@@ -449,11 +449,21 @@ export default function Landing() {
           </div>
 
           {/* Zero fees badge */}
-          <div className="flex justify-center mb-12">
+          <div className="flex justify-center mb-8">
             <div className="inline-flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 text-sm font-bold px-5 py-2.5 rounded-full">
               <CheckCircle2 size={16} />
-              KES 0 per transaction — pay your subscription and that's it
+              One flat subscription fee. Zero extra charges. Ever.
             </div>
+          </div>
+          <div className="max-w-xl mx-auto mb-10 bg-slate-50 border border-slate-200 rounded-2xl p-5 text-sm text-slate-600 leading-relaxed">
+            <p className="font-bold text-slate-800 mb-2">💡 What does "no transaction fees" mean?</p>
+            <p>
+              When you pay your KPLC bill or fuel depot via M-Pesa or bank transfer, 
+              <span className="font-semibold text-slate-800"> ShieldPay charges you nothing extra</span> for executing that payment.
+              You only pay your monthly subscription — KES 1,499 or KES 2,999.
+              The actual M-Pesa or bank charges from your bank/Safaricom still apply as normal,
+              but <span className="font-semibold text-slate-800">we don't add any markup on top of those</span>.
+            </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
