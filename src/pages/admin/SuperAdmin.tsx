@@ -4,7 +4,7 @@ import {
   LogOut, Activity, CreditCard, Search, Plug, Settings, Plus,
   Trash2, MessageSquare, Phone, Mail, Send, Bell, TrendingUp,
   AlertTriangle, Zap, DollarSign, BarChart3, ChevronRight,
-  UserPlus, Filter, Download,
+  UserPlus, Filter, Download, Loader2,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -12,7 +12,8 @@ import { PLANS, INDUSTRY_CONFIG, ROLE_CONFIG } from "@/lib/constants";
 import { fmtKES, clsx } from "@/lib/utils";
 import { format } from "date-fns";
 
-const COMMS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/comms`;
+const COMMS_URL    = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/comms`;
+const PAYMENTS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/payments`;
 
 type AdminTab = "dashboard" | "businesses" | "subscriptions" | "payments" | "comms" | "admins" | "log";
 
@@ -372,6 +373,367 @@ function BusinessPanel({ b, onClose, onRefresh }: {
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+
+// ─── Payments Execution Queue ─────────────────────────────────
+// The core of admin power: see every payment waiting to be executed,
+// approve + fire through KCB Buni (M-Pesa) or Stanbic PesaLink APIs
+function PaymentsExecutionQueue({
+  businesses, onRefresh, showToast,
+}: {
+  businesses: any[];
+  onRefresh: () => void;
+  showToast: (msg: string, ok?: boolean) => void;
+}) {
+  const [payments, setPayments] = useState<any[]>([]);
+  const [loading, setLoading]   = useState(true);
+  const [executing, setExecuting] = useState<string | null>(null); // payment id being executed
+  const [filter, setFilter]     = useState<"pending_approval"|"approved"|"executing"|"failed"|"all">("approved");
+  const [detail, setDetail]     = useState<any | null>(null); // expanded payment
+
+  const load = async () => {
+    setLoading(true);
+    let query = supabase
+      .from("payment_requests")
+      .select("*, supplier:suppliers(name,type,paybill_number,till_number,phone_number,bank_account,bank_name,bank_code,account_number), business:businesses(name,industry)")
+      .order("due_date", { ascending: true })
+      .limit(100);
+
+    if (filter !== "all") query = query.eq("status", filter);
+
+    const { data } = await query;
+    setPayments(data ?? []);
+    setLoading(false);
+  };
+
+  useEffect(() => { load(); }, [filter]);
+
+  // Counts per status for tab badges
+  const [counts, setCounts] = useState<Record<string,number>>({});
+  useEffect(() => {
+    supabase.from("payment_requests")
+      .select("status")
+      .then(({ data }) => {
+        const c: Record<string,number> = {};
+        (data ?? []).forEach((r: any) => { c[r.status] = (c[r.status] ?? 0) + 1; });
+        setCounts(c);
+      });
+  }, [payments]);
+
+  // Execute a payment through the actual API
+  const executePayment = async (paymentId: string) => {
+    setExecuting(paymentId);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(PAYMENTS_URL, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${session?.access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ action: "execute", payment_request_id: paymentId }),
+      });
+      const result = await res.json();
+      if (result.success) {
+        showToast("✅ Payment initiated successfully!");
+        setPayments(prev => prev.map(p =>
+          p.id === paymentId ? { ...p, status: "executing" } : p
+        ));
+      } else {
+        showToast(`❌ ${result.error ?? "Execution failed"}`, false);
+        setPayments(prev => prev.map(p =>
+          p.id === paymentId ? { ...p, status: "failed" } : p
+        ));
+      }
+    } catch (e: any) {
+      showToast(`❌ ${e.message}`, false);
+    }
+    setExecuting(null);
+    onRefresh();
+  };
+
+  // Approve + immediately execute in one click
+  const approveAndExecute = async (p: any) => {
+    if (!confirm(`Execute payment of ${fmtKES(p.amount)} to ${(p.supplier as any)?.name}?\n\nThis will fire the real ${p.payment_method === "pesalink" ? "PesaLink bank transfer" : "M-Pesa"} API.`)) return;
+    // First approve
+    await supabase.from("payment_requests").update({ status: "approved" }).eq("id", p.id);
+    setPayments(prev => prev.map(x => x.id === p.id ? { ...x, status: "approved" } : x));
+    // Then execute
+    await executePayment(p.id);
+  };
+
+  const approveOnly = async (p: any) => {
+    await supabase.from("payment_requests").update({
+      status: "approved", approved_at: new Date().toISOString(),
+    }).eq("id", p.id);
+    setPayments(prev => prev.map(x => x.id === p.id ? { ...x, status: "approved" } : x));
+    showToast("✅ Payment approved — ready to execute");
+
+    // Log
+    const u = await supabase.auth.getUser();
+    await supabase.from("admin_actions").insert({
+      admin_user_id: u.data.user?.id, admin_email: u.data.user?.email,
+      action: "approve_payment", target_type: "payment_request", target_id: p.id,
+      details: { amount: p.amount, payee: (p.supplier as any)?.name },
+    });
+  };
+
+  const cancelPayment = async (id: string) => {
+    if (!confirm("Cancel this payment?")) return;
+    await supabase.from("payment_requests").update({ status: "cancelled" }).eq("id", id);
+    setPayments(prev => prev.filter(p => p.id !== id));
+    showToast("Payment cancelled");
+  };
+
+  const STATUS_FILTERS = [
+    { key: "approved"         as const, label: "Ready to Execute", color: "text-green-400",  bg: "bg-green-900/20 border-green-800"  },
+    { key: "pending_approval" as const, label: "Needs Approval",   color: "text-amber-400",  bg: "bg-amber-900/20 border-amber-800"  },
+    { key: "executing"        as const, label: "In Progress",      color: "text-blue-400",   bg: "bg-blue-900/20 border-blue-800"    },
+    { key: "failed"           as const, label: "Failed",           color: "text-red-400",    bg: "bg-red-900/20 border-red-800"      },
+    { key: "all"              as const, label: "All",              color: "text-slate-400",  bg: "bg-slate-800 border-slate-700"     },
+  ];
+
+  const getMethodLabel = (method: string) => {
+    if (method === "pesalink")    return { icon: "🏦", label: "PesaLink", api: "Stanbic PesaLink API" };
+    if (method === "kcb_paybill") return { icon: "📱", label: "M-Pesa Paybill", api: "KCB Buni B2B" };
+    if (method === "kcb_till")    return { icon: "🏪", label: "M-Pesa Till", api: "KCB Buni B2B" };
+    if (method === "kcb_mobile")  return { icon: "📲", label: "M-Pesa Send", api: "KCB Buni B2C" };
+    return { icon: "💳", label: method, api: "API" };
+  };
+
+  const getAccountDisplay = (p: any) => {
+    const sup = p.supplier as any;
+    if (p.account_ref) return p.account_ref;
+    if (sup?.paybill_number) return sup.paybill_number + (sup.account_number ? ` → ${sup.account_number}` : "");
+    if (sup?.till_number)    return sup.till_number;
+    if (sup?.phone_number)   return sup.phone_number;
+    if (sup?.bank_account)   return sup.bank_account;
+    return "—";
+  };
+
+  const isOverdue = (dueDate: string) => new Date(dueDate) < new Date();
+  const isDueToday = (dueDate: string) => {
+    const d = new Date(dueDate);
+    const n = new Date();
+    return d.toDateString() === n.toDateString();
+  };
+
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-black text-white">Payment Execution Queue</h2>
+          <p className="text-sm text-slate-400 mt-0.5">Approve and fire payments through KCB Buni (M-Pesa) or Stanbic PesaLink</p>
+        </div>
+        <button onClick={load} className="text-slate-400 hover:text-white p-2 rounded-xl hover:bg-slate-800">
+          <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
+        </button>
+      </div>
+
+      {/* Status filter tabs */}
+      <div className="flex gap-2 flex-wrap">
+        {STATUS_FILTERS.map(f => (
+          <button key={f.key} onClick={() => setFilter(f.key)}
+            className={clsx(
+              "flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all",
+              filter === f.key ? f.bg + " " + f.color : "bg-slate-900 border-slate-800 text-slate-500 hover:text-slate-300"
+            )}>
+            {f.label}
+            {counts[f.key] > 0 && (
+              <span className={clsx("text-xs font-black px-1.5 py-0.5 rounded-full",
+                filter === f.key ? "bg-white/20" : "bg-slate-700")}>
+                {counts[f.key]}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* Payment cards */}
+      {loading ? (
+        <div className="space-y-3">
+          {[1,2,3].map(i => (
+            <div key={i} className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+              <div className="h-16 bg-slate-800 animate-pulse rounded-xl" />
+            </div>
+          ))}
+        </div>
+      ) : payments.length === 0 ? (
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center">
+          <div className="text-4xl mb-3">✅</div>
+          <p className="font-bold text-white">No payments in this queue</p>
+          <p className="text-sm text-slate-400 mt-1">
+            {filter === "approved" ? "No payments approved and waiting to execute" :
+             filter === "pending_approval" ? "No payments waiting for approval" :
+             "Queue is empty"}
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {payments.map(p => {
+            const sup    = p.supplier as any;
+            const biz    = p.business as any;
+            const method = getMethodLabel(p.payment_method);
+            const acct   = getAccountDisplay(p);
+            const over   = isOverdue(p.due_date);
+            const today  = isDueToday(p.due_date);
+            const isExec = executing === p.id;
+
+            return (
+              <div key={p.id} className={clsx(
+                "bg-slate-900 border rounded-2xl overflow-hidden transition-all",
+                over ? "border-red-800" : today ? "border-amber-700" : "border-slate-800"
+              )}>
+                {/* Main row */}
+                <div className="p-5 flex items-start gap-4">
+                  {/* Method icon */}
+                  <div className="w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center text-2xl shrink-0">
+                    {method.icon}
+                  </div>
+
+                  {/* Details */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                          <p className="font-bold text-white truncate">{p.title}</p>
+                          {over && <span className="text-xs bg-red-900/40 text-red-400 border border-red-800 px-2 py-0.5 rounded-full font-bold">OVERDUE</span>}
+                          {today && !over && <span className="text-xs bg-amber-900/40 text-amber-400 border border-amber-800 px-2 py-0.5 rounded-full font-bold">DUE TODAY</span>}
+                        </div>
+                        <p className="text-sm text-slate-400">{biz?.name} · {biz?.industry}</p>
+                      </div>
+                      <p className="text-2xl font-black text-white shrink-0">{fmtKES(p.amount)}</p>
+                    </div>
+
+                    {/* Payment routing info */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
+                      <div className="bg-slate-800 rounded-xl px-3 py-2">
+                        <p className="text-[10px] text-slate-500 uppercase font-bold">Payee</p>
+                        <p className="text-sm font-semibold text-white truncate">{sup?.name ?? "—"}</p>
+                      </div>
+                      <div className="bg-slate-800 rounded-xl px-3 py-2">
+                        <p className="text-[10px] text-slate-500 uppercase font-bold">Method</p>
+                        <p className="text-sm font-semibold text-white">{method.label}</p>
+                        <p className="text-[10px] text-slate-500">{method.api}</p>
+                      </div>
+                      <div className="bg-slate-800 rounded-xl px-3 py-2">
+                        <p className="text-[10px] text-slate-500 uppercase font-bold">Account / Number</p>
+                        <p className="text-sm font-semibold text-white font-mono truncate">{acct}</p>
+                      </div>
+                      <div className="bg-slate-800 rounded-xl px-3 py-2">
+                        <p className="text-[10px] text-slate-500 uppercase font-bold">Due Date</p>
+                        <p className={clsx("text-sm font-semibold",
+                          over ? "text-red-400" : today ? "text-amber-400" : "text-white")}>
+                          {format(new Date(p.due_date), "dd MMM yyyy")}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action bar */}
+                <div className="px-5 pb-4 flex items-center gap-2 flex-wrap">
+                  {/* Status badge */}
+                  <span className={clsx("text-xs px-2.5 py-1 rounded-full font-bold",
+                    p.status==="completed"       ? "bg-green-900/40 text-green-400" :
+                    p.status==="approved"        ? "bg-blue-900/40 text-blue-400" :
+                    p.status==="pending_approval"? "bg-amber-900/40 text-amber-400" :
+                    p.status==="executing"       ? "bg-purple-900/40 text-purple-400 animate-pulse" :
+                    p.status==="failed"          ? "bg-red-900/40 text-red-400" :
+                    "bg-slate-700 text-slate-300")}>
+                    {p.status === "executing" ? "⚡ Executing…" : p.status.replace(/_/g," ")}
+                  </span>
+
+                  <div className="flex-1" />
+
+                  {/* APPROVE + EXECUTE — one button for max efficiency */}
+                  {p.status === "pending_approval" && (
+                    <button
+                      onClick={() => approveAndExecute(p)}
+                      disabled={isExec}
+                      className="flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-all disabled:opacity-50 shadow-lg shadow-green-900/30">
+                      {isExec ? <Loader2 size={14} className="animate-spin" /> : <Zap size={14} />}
+                      Approve & Execute
+                    </button>
+                  )}
+
+                  {/* EXECUTE — already approved, just needs firing */}
+                  {p.status === "approved" && (
+                    <button
+                      onClick={() => executePayment(p.id)}
+                      disabled={isExec}
+                      className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-all disabled:opacity-50 shadow-lg shadow-primary/20">
+                      {isExec
+                        ? <><Loader2 size={14} className="animate-spin" /> Executing…</>
+                        : <><Zap size={14} /> Execute via {p.payment_method === "pesalink" ? "PesaLink" : "M-Pesa"}</>}
+                    </button>
+                  )}
+
+                  {/* APPROVE ONLY — for pending payments you want to review first */}
+                  {p.status === "pending_approval" && (
+                    <button
+                      onClick={() => approveOnly(p)}
+                      className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold px-4 py-2.5 rounded-xl border border-slate-700 transition-all">
+                      <CheckCircle2 size={14} /> Approve Only
+                    </button>
+                  )}
+
+                  {/* RETRY — for failed payments */}
+                  {p.status === "failed" && (
+                    <>
+                      <button
+                        onClick={async () => {
+                          await supabase.from("payment_requests").update({ status: "approved" }).eq("id", p.id);
+                          setPayments(prev => prev.map(x => x.id === p.id ? { ...x, status: "approved" } : x));
+                        }}
+                        className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold px-4 py-2.5 rounded-xl border border-slate-700">
+                        <RefreshCw size={14} /> Reset to Approved
+                      </button>
+                      <button
+                        onClick={() => executePayment(p.id)}
+                        disabled={isExec}
+                        className="flex items-center gap-2 bg-red-600 hover:bg-red-500 text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-all disabled:opacity-50">
+                        {isExec ? <Loader2 size={14} className="animate-spin" /> : <Zap size={14} />}
+                        Retry Execution
+                      </button>
+                    </>
+                  )}
+
+                  {/* CANCEL */}
+                  {!["completed","cancelled","executing"].includes(p.status) && (
+                    <button
+                      onClick={() => cancelPayment(p.id)}
+                      className="p-2.5 rounded-xl hover:bg-red-900/30 text-slate-600 hover:text-red-400 transition-all"
+                      title="Cancel payment">
+                      <XCircle size={15} />
+                    </button>
+                  )}
+
+                  {/* Completed — show receipt info */}
+                  {p.status === "completed" && (
+                    <div className="flex items-center gap-2 text-green-400 text-xs font-semibold">
+                      <CheckCircle2 size={14} />
+                      Completed {p.completed_at ? format(new Date(p.completed_at),"dd MMM HH:mm") : ""}
+                      {p.mpesa_receipt && <span className="font-mono bg-green-900/20 px-2 py-0.5 rounded-lg">{p.mpesa_receipt}</span>}
+                      {p.bank_reference && <span className="font-mono bg-green-900/20 px-2 py-0.5 rounded-lg">{p.bank_reference}</span>}
+                    </div>
+                  )}
+                </div>
+
+                {/* Failure reason */}
+                {p.status === "failed" && p.failure_reason && (
+                  <div className="mx-5 mb-4 px-3 py-2.5 bg-red-900/20 border border-red-800/50 rounded-xl">
+                    <p className="text-xs text-red-400 font-medium">Failure reason: {p.failure_reason}</p>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -775,63 +1137,13 @@ export default function SuperAdmin() {
             </div>
           )}
 
-          {/* ── PAYMENTS ── */}
+          {/* ── PAYMENTS EXECUTION QUEUE ── */}
           {tab==="payments" && (
-            <div className="space-y-4">
-              <h2 className="text-xl font-black text-white">All Payments</h2>
-              <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead><tr className="border-b border-slate-800">
-                      {["Title","Amount","Status","Business","Date","Actions"].map(h => (
-                        <th key={h} className="text-left px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">{h}</th>
-                      ))}
-                    </tr></thead>
-                    <tbody>
-                      {loading ? Array.from({length:8}).map((_,i) => (
-                        <tr key={i} className="border-b border-slate-800/50">
-                          {Array.from({length:6}).map((_,j) => <td key={j} className="px-5 py-4"><div className="h-4 bg-slate-800 animate-pulse rounded"/></td>)}
-                        </tr>
-                      )) : allPayments.map(p => {
-                        const biz = businesses.find(b => b.id===p.business_id);
-                        return (
-                          <tr key={p.id} className="border-b border-slate-800/50 hover:bg-slate-800/20">
-                            <td className="px-5 py-3 font-medium text-white max-w-[180px] truncate">{p.title}</td>
-                            <td className="px-5 py-3 font-bold text-white">{fmtKES(p.amount)}</td>
-                            <td className="px-5 py-3">
-                              <span className={clsx("text-xs px-2 py-1 rounded-lg font-medium",
-                                p.status==="completed"?"bg-green-900/40 text-green-400":
-                                p.status==="failed"?"bg-red-900/40 text-red-400":
-                                p.status==="pending_approval"?"bg-amber-900/40 text-amber-400":"bg-slate-700 text-slate-300")}>
-                                {p.status}
-                              </span>
-                            </td>
-                            <td className="px-5 py-3 text-xs text-slate-400">{biz?.name ?? p.business_id.slice(0,8)}</td>
-                            <td className="px-5 py-3 text-xs text-slate-500">{format(new Date(p.created_at),"dd MMM yy HH:mm")}</td>
-                            <td className="px-5 py-3">
-                              <div className="flex gap-1">
-                                {p.status==="pending_approval" && (
-                                  <button onClick={async() => {
-                                    await supabase.from("payment_requests").update({status:"approved"}).eq("id",p.id);
-                                    setAllPayments(prev => prev.map(x => x.id===p.id?{...x,status:"approved"}:x));
-                                  }} className="text-[10px] bg-green-900/30 text-green-400 border border-green-800 px-2 py-1 rounded-lg">Approve</button>
-                                )}
-                                {p.status==="failed" && (
-                                  <button onClick={async() => {
-                                    await supabase.from("payment_requests").update({status:"approved"}).eq("id",p.id);
-                                    setAllPayments(prev => prev.map(x => x.id===p.id?{...x,status:"approved"}:x));
-                                  }} className="text-[10px] bg-blue-900/30 text-blue-400 border border-blue-800 px-2 py-1 rounded-lg">Retry</button>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
+            <PaymentsExecutionQueue
+              businesses={businesses}
+              onRefresh={load}
+              showToast={showToast}
+            />
           )}
 
           {/* ── COMMS ── */}
