@@ -26,3 +26,4 @@ jobs:
           supabase functions deploy callback         --project-ref $PROJECT_ID
           supabase functions deploy accounting-sync  --project-ref $PROJECT_ID
           supabase functions deploy bill-feed        --project-ref $PROJECT_ID
+          supabase functions deploy comms              --project-ref $PROJECT_ID

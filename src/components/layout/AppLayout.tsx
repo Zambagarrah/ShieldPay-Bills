@@ -217,15 +217,6 @@ export function AppLayout({ children, title, subtitle, actions }: {
 
       <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
         {NAV.map((item: any) => <NavItem key={item.path} item={item} close={close} />)}
-        {isSuperAdmin && (
-          <>
-            <div className="divider my-2" />
-            <Link to="/admin" onClick={close}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-amber-700 bg-amber-50 border border-amber-200 hover:bg-amber-100 transition-colors">
-              <ShieldCheck size={16} /> Super Admin
-            </Link>
-          </>
-        )}
       </nav>
 
       {daysLeft !== null && daysLeft <= 14 && (
