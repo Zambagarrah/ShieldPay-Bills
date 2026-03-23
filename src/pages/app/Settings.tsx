@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Save, Loader2, Building2, CreditCard, Settings2, CheckCircle2, Plug } from "lucide-react";
+import { Save, Loader2, Building2, CreditCard, Settings2, CheckCircle2, Plug, BookOpen } from "lucide-react";
 import { IntegrationsTab } from "@/pages/app/IntegrationsTab";
+import { EtimsTab } from "@/pages/app/EtimsTab";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,7 +11,7 @@ import { fmtKES, trialDaysLeft, clsx } from "@/lib/utils";
 import type { IndustryType } from "@/lib/types";
 import { format } from "date-fns";
 
-type Tab = "profile" | "billing" | "workflow" | "integrations";
+type Tab = "profile" | "billing" | "workflow" | "integrations" | "etims";
 
 function ProfileTab() {
   const { business, isAdmin, refetch } = useAuth();
@@ -150,6 +151,7 @@ export default function Settings() {
     { id: "billing"      as Tab, label: "Billing & Plans",  icon: CreditCard },
     { id: "workflow"     as Tab, label: "Workflow Rules",   icon: Settings2  },
     { id: "integrations" as Tab, label: "Integrations",     icon: Plug       },
+    { id: "etims"        as Tab, label: "eTIMS / KRA",     icon: BookOpen   },
   ];
 
   return (
@@ -168,6 +170,7 @@ export default function Settings() {
         {tab === "billing"  && <BillingTab />}
         {tab === "workflow"     && <WorkflowTab />}
         {tab === "integrations" && <IntegrationsTab />}
+        {tab === "etims"        && <EtimsTab />}
       </div>
     </AppLayout>
   );

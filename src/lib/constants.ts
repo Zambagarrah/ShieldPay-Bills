@@ -1,71 +1,68 @@
-import type { PlanKey, MemberRole, PaymentMethod, SupplierType, Frequency, PaymentStatus, IndustryType } from "./types";
+import type { PlanKey, MemberRole, PaymentMethod, SupplierType, Frequency, PaymentStatus } from "./types";
 
-// ─── SUBSCRIPTION-ONLY PLANS (no per-transaction fees) ───────
+// ─── PLANS — Simple. Solo vs Multi-branch ────────────────────
 export const PLANS: Record<PlanKey, {
-  name: string; price: number | null; maxSchedules: number;
-  badge: string; tagline: string; popular: boolean;
-  features: string[];
+  name: string; price: number | null; badge: string; tagline: string;
+  popular: boolean; features: string[];
 }> = {
-  starter: {
-    name: "Starter", price: 1499, maxSchedules: 20, badge: "badge-slate",
-    tagline: "Perfect for a single location",
+  solo: {
+    name: "Solo Branch", price: 1499, badge: "badge-slate",
+    tagline: "One location. One flat fee.",
     popular: false,
     features: [
-      "Up to 20 bill schedules",
+      "Single business location",
+      "Unlimited bill schedules",
       "M-Pesa + PesaLink payments",
       "Auto-generated receipts",
-      "Cash flow reports",
       "Approval workflows",
-      "KRA compliance reports",
+      "KRA-ready reports",
       "Up to 5 team members",
+      "eTIMS integration",
+      "Excel / QuickBooks / Zoho sync",
       "Email support",
     ],
   },
-  growth: {
-    name: "Growth", price: 2999, maxSchedules: 100, badge: "badge-green",
-    tagline: "For growing businesses",
+  multi: {
+    name: "Multi Branch", price: 2999, badge: "badge-green",
+    tagline: "Multiple locations. One account.",
     popular: true,
     features: [
-      "Up to 100 bill schedules",
-      "Everything in Starter",
+      "Multiple business locations",
+      "Everything in Solo",
       "Auto-execute on due date",
-      "QuickBooks + Zoho sync",
-      "Advanced analytics",
-      "Up to 15 team members",
+      "Advanced analytics & reporting",
+      "Up to 20 team members",
       "Priority support",
-      "Custom budget categories",
+      "Dedicated account manager",
+      "Custom bill categories",
     ],
   },
   enterprise: {
-    name: "Enterprise", price: null, maxSchedules: 999999, badge: "badge-purple",
-    tagline: "For large operations",
+    name: "Enterprise", price: null, badge: "badge-purple",
+    tagline: "Large operations. Custom pricing.",
     popular: false,
     features: [
-      "Unlimited bill schedules",
-      "Everything in Growth",
+      "Unlimited locations",
+      "Everything in Multi Branch",
       "Unlimited team members",
-      "Dedicated account manager",
-      "Custom integrations + API",
+      "API access",
       "SLA guarantee",
       "On-site training",
-      "Custom reporting",
+      "Custom integrations",
+      "White-label options",
     ],
   },
 };
-
-// ─── NO TRANSACTION FEES ─────────────────────────────────────
-// Subscription only. Zero per-transaction charges.
-export const TRANSACTION_FEE = 0;
 
 export const ROLE_CONFIG: Record<MemberRole, {
   label: string; badge: string; icon: string; desc: string;
   canApprove: boolean; canExecute: boolean; canWrite: boolean; isAdmin: boolean;
 }> = {
-  owner:           { label: "Owner",           badge: "badge-purple", icon: "👑", desc: "Full access — billing, settings, all operations.",              canApprove: true,  canExecute: true,  canWrite: true,  isAdmin: true  },
-  admin:           { label: "Admin",           badge: "badge-blue",   icon: "🔑", desc: "Manage suppliers, schedule payments, manage team.",             canApprove: true,  canExecute: true,  canWrite: true,  isAdmin: true  },
-  finance_manager: { label: "Finance Manager", badge: "badge-green",  icon: "💼", desc: "Execute approved payments, export reports.",                    canApprove: false, canExecute: true,  canWrite: true,  isAdmin: false },
-  approver:        { label: "Approver",        badge: "badge-amber",  icon: "✅", desc: "Review and approve or reject payment requests.",                canApprove: true,  canExecute: false, canWrite: false, isAdmin: false },
-  viewer:          { label: "Viewer",          badge: "badge-slate",  icon: "👁", desc: "Read-only dashboard and reports access.",                       canApprove: false, canExecute: false, canWrite: false, isAdmin: false },
+  owner:           { label: "Owner",           badge: "badge-purple", icon: "👑", desc: "Full access — billing, settings, all operations.",       canApprove: true,  canExecute: true,  canWrite: true,  isAdmin: true  },
+  admin:           { label: "Admin",           badge: "badge-blue",   icon: "🔑", desc: "Manage payees, schedule bills, manage team.",            canApprove: true,  canExecute: true,  canWrite: true,  isAdmin: true  },
+  finance_manager: { label: "Finance Manager", badge: "badge-green",  icon: "💼", desc: "Execute approved payments, export reports.",             canApprove: false, canExecute: true,  canWrite: true,  isAdmin: false },
+  approver:        { label: "Approver",        badge: "badge-amber",  icon: "✅", desc: "Review and approve or reject payment requests.",         canApprove: true,  canExecute: false, canWrite: false, isAdmin: false },
+  viewer:          { label: "Viewer",          badge: "badge-slate",  icon: "👁", desc: "Read-only dashboard and reports access.",                canApprove: false, canExecute: false, canWrite: false, isAdmin: false },
 };
 
 export const STATUS_CONFIG: Record<PaymentStatus, { label: string; badge: string }> = {
@@ -81,10 +78,10 @@ export const STATUS_CONFIG: Record<PaymentStatus, { label: string; badge: string
 };
 
 export const METHOD_CONFIG: Record<PaymentMethod, { label: string; icon: string; provider: string; desc: string }> = {
-  pesalink:    { label: "Bank Transfer (PesaLink)", icon: "🏦", provider: "Stanbic PesaLink", desc: "Bank-to-bank via PesaLink" },
-  kcb_paybill: { label: "M-Pesa Paybill",          icon: "📱", provider: "KCB Buni",         desc: "Pay to any M-Pesa paybill" },
-  kcb_till:    { label: "M-Pesa Till",             icon: "🏪", provider: "KCB Buni",         desc: "Pay to an M-Pesa till" },
-  kcb_mobile:  { label: "M-Pesa Send Money",       icon: "📲", provider: "KCB Buni",         desc: "Send to a mobile number" },
+  pesalink:    { label: "Bank Transfer (PesaLink)", icon: "🏦", provider: "Stanbic PesaLink", desc: "Bank-to-bank via PesaLink"    },
+  kcb_paybill: { label: "M-Pesa Paybill",          icon: "📱", provider: "KCB Buni",         desc: "Pay to any M-Pesa paybill"   },
+  kcb_till:    { label: "M-Pesa Till",             icon: "🏪", provider: "KCB Buni",         desc: "Pay to an M-Pesa till"       },
+  kcb_mobile:  { label: "M-Pesa Send Money",       icon: "📲", provider: "KCB Buni",         desc: "Send to a mobile number"     },
 };
 
 export const SUPPLIER_TYPE_CONFIG: Record<SupplierType, { label: string; icon: string }> = {
@@ -106,45 +103,15 @@ export const FREQUENCY_LABELS: Record<Frequency, string> = {
   yearly:    "Annually",
 };
 
-export const INDUSTRY_CONFIG: Record<IndustryType, {
-  label: string; icon: string; color: string; tagline: string;
-  painPoint: string;
-}> = {
-  restaurant: {
-    label: "Restaurant",  icon: "🍽️", color: "orange",
-    tagline: "KPLC, gas, food suppliers, rent, NHIF — all automated",
-    painPoint: "Never miss a supplier payment and risk your kitchen shutting down",
-  },
-  logistics: {
-    label: "Logistics",   icon: "🚛", color: "blue",
-    tagline: "Fuel, insurance, driver payroll, maintenance — zero missed payments",
-    painPoint: "Never miss a fuel or insurance payment and ground your fleet",
-  },
-};
-
-export const SUPPLIER_CATEGORIES_BY_INDUSTRY: Record<IndustryType, string[]> = {
-  restaurant: [
-    "Food Supplier / Produce", "Utilities (KPLC)", "Gas / LPG", "Rent / Lease",
-    "Water Bill", "NHIF / NSSF", "KRA / Taxes", "Insurance",
-    "Equipment / Machinery", "Cleaning & Supplies", "Marketing", "Loan Repayment", "Other",
-  ],
-  logistics: [
-    "Fuel / Petroleum", "Vehicle Insurance", "Tyre & Maintenance", "NTSA / Licensing",
-    "Driver NSSF / Payroll", "Toll / Road Fees", "Utilities (KPLC)", "KRA / Taxes",
-    "Vehicle Loan Repayment", "Spare Parts", "Tracking / Tech", "Other",
-  ],
-};
-
-export const BUDGET_CATEGORIES_BY_INDUSTRY: Record<IndustryType, string[]> = {
-  restaurant: [
-    "Food & Beverage", "Utilities", "Rent & Lease", "Staff Costs",
-    "Insurance", "Taxes & Compliance", "Marketing", "Equipment", "Loan Repayment", "Other",
-  ],
-  logistics: [
-    "Fuel", "Vehicle Insurance", "Maintenance & Repairs", "Driver Costs",
-    "Licensing & Compliance", "Utilities", "Taxes", "Vehicle Finance", "Tracking & Tech", "Other",
-  ],
-};
+// ─── Any business type — user types their own ────────────────
+export const COMMON_INDUSTRIES = [
+  "Restaurant / Food Service", "Logistics & Transport", "Retail & Wholesale",
+  "Healthcare / Clinic", "School / Education", "Real Estate / Property",
+  "Construction", "Manufacturing", "Agriculture / Farming",
+  "Hotel / Hospitality", "Salon / Beauty", "Pharmacy",
+  "Hardware / Building Materials", "Petrol Station", "Tour & Travel",
+  "IT / Technology", "Legal / Consultancy", "Church / NGO / SACCO", "Other",
+];
 
 export const KE_BANKS = [
   "KCB Bank", "Equity Bank", "Co-operative Bank", "Absa Kenya", "Standard Chartered",
@@ -162,3 +129,4 @@ export const SUPABASE_REF      = "rnplqhlwvnqrghrjvylx";
 export const CALLBACK_URL      = `https://${SUPABASE_REF}.supabase.co/functions/v1/callback`;
 export const PAYMENTS_URL      = `https://${SUPABASE_REF}.supabase.co/functions/v1/payments`;
 export const TRIAL_DAYS        = 30;
+export const ADMIN_WHATSAPP    = "254715800397";

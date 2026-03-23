@@ -1,0 +1,14 @@
+{
+  "name": "ShieldPay — Bill Automation",
+  "short_name": "ShieldPay",
+  "description": "Automated bill payments for Kenyan businesses",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#0f4c2a",
+  "orientation": "any",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

@@ -33,7 +33,7 @@ const NAV = [
       { label: "Audit Log",       path: "/reports/audit",    icon: History    },
     ],
   },
-  { label: "KRA Filing", path: "/kra",        icon: BookOpen },
+  { label: "KRA & eTIMS", path: "/kra",       icon: BookOpen },
   { label: "Settings",   path: "/settings",   icon: Settings },
 ];
 

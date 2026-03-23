@@ -12,6 +12,8 @@ const NAV = [
   { label: "How it works", href: "#how" },
   { label: "Who it's for", href: "#who" },
   { label: "Features",     href: "#features" },
+  { label: "Pricing",       href: "#pricing"  },
+  { label: "About",         href: "#about"    },
 ];
 
 // ─── Stats ────────────────────────────────────────────────────
@@ -385,14 +387,269 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* ── INTEGRATIONS BANNER ── */}
+      <section className="py-12 px-4 sm:px-6 bg-white border-y border-slate-100">
+        <div className="max-w-5xl mx-auto text-center">
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">Connects with your existing tools</p>
+          <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
+            {[
+              { name: "QuickBooks Online", icon: "📗", desc: "Auto-import bills" },
+              { name: "Zoho Books",        icon: "📘", desc: "Two-way sync" },
+              { name: "Microsoft Excel",   icon: "📊", desc: "Import/export" },
+              { name: "KRA eTIMS",         icon: "🏛️", desc: "Auto tax invoices" },
+              { name: "KCB Buni",          icon: "📱", desc: "M-Pesa payments" },
+              { name: "Stanbic PesaLink",  icon: "🏦", desc: "Bank transfers" },
+            ].map(i => (
+              <div key={i.name} className="flex items-center gap-2.5 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3">
+                <span className="text-xl">{i.icon}</span>
+                <div className="text-left">
+                  <p className="text-sm font-bold text-slate-800">{i.name}</p>
+                  <p className="text-xs text-slate-400">{i.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── PRICING ── */}
+      <section id="pricing" className="py-16 sm:py-24 px-4 sm:px-6 bg-slate-50">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-6">
+            <p className="text-xs font-bold text-primary uppercase tracking-widest mb-3">Pricing</p>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 mb-4">
+              Simple. Flat fee. No surprises.
+            </h2>
+            <p className="text-base sm:text-lg text-slate-500 max-w-2xl mx-auto">
+              One subscription covers everything — unlimited bills, all payment types, eTIMS filing, accounting sync.
+              <strong className="text-slate-700"> We don't charge per transaction.</strong>
+            </p>
+          </div>
+
+          {/* Zero transaction fee badge */}
+          <div className="flex justify-center mb-10">
+            <div className="inline-flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 text-sm font-bold px-5 py-2.5 rounded-full">
+              <CheckCircle2 size={16} />
+              KES 0 extra per payment — just your flat monthly subscription
+            </div>
+          </div>
+
+          <div className="grid sm:grid-cols-3 gap-5 sm:gap-6">
+            {/* Solo */}
+            <div className="bg-white rounded-3xl border-2 border-slate-200 p-6 sm:p-8 flex flex-col">
+              <div>
+                <p className="text-sm font-bold text-slate-400 mb-1">Solo Branch</p>
+                <div className="flex items-baseline gap-1 mb-1">
+                  <span className="text-4xl font-black text-slate-900">KES 1,499</span>
+                  <span className="text-slate-400 text-sm">/month</span>
+                </div>
+                <p className="text-sm text-slate-500 mb-6">For a single location business</p>
+              </div>
+              <ul className="space-y-3 flex-1 mb-6">
+                {["Single business location","Unlimited bill schedules","M-Pesa + PesaLink payments","Auto receipts + KRA reports","eTIMS auto-filing","Excel / QuickBooks / Zoho sync","Up to 5 team members","30-day free trial"].map(f => (
+                  <li key={f} className="flex items-start gap-2.5 text-sm">
+                    <CheckCircle2 size={15} className="text-primary shrink-0 mt-0.5" />
+                    <span className="text-slate-600">{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <a href="/login" className="block text-center bg-slate-900 text-white font-bold py-3.5 rounded-2xl hover:bg-slate-800 transition-all">
+                Start free trial
+              </a>
+            </div>
+
+            {/* Multi Branch — highlighted */}
+            <div className="bg-primary rounded-3xl p-6 sm:p-8 flex flex-col relative shadow-2xl shadow-primary/20 scale-100 sm:scale-105">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-amber-400 text-slate-900 text-xs font-black px-4 py-1.5 rounded-full whitespace-nowrap">
+                MOST POPULAR
+              </div>
+              <div>
+                <p className="text-sm font-bold text-white/70 mb-1">Multi Branch</p>
+                <div className="flex items-baseline gap-1 mb-1">
+                  <span className="text-4xl font-black text-white">KES 2,999</span>
+                  <span className="text-white/60 text-sm">/month</span>
+                </div>
+                <p className="text-sm text-white/70 mb-6">For businesses with multiple locations</p>
+              </div>
+              <ul className="space-y-3 flex-1 mb-6">
+                {["Multiple business locations","Everything in Solo Branch","Auto-execute payments on due date","Advanced analytics & reporting","Up to 20 team members","Priority support","Dedicated account manager","30-day free trial"].map(f => (
+                  <li key={f} className="flex items-start gap-2.5 text-sm">
+                    <CheckCircle2 size={15} className="text-white/80 shrink-0 mt-0.5" />
+                    <span className="text-white/90">{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <a href="/login" className="block text-center bg-white text-primary font-bold py-3.5 rounded-2xl hover:bg-slate-50 transition-all">
+                Start free trial
+              </a>
+            </div>
+
+            {/* Enterprise */}
+            <div className="bg-slate-900 rounded-3xl border-2 border-slate-700 p-6 sm:p-8 flex flex-col">
+              <div>
+                <p className="text-sm font-bold text-slate-400 mb-1">Enterprise</p>
+                <div className="flex items-baseline gap-1 mb-1">
+                  <span className="text-4xl font-black text-white">Custom</span>
+                </div>
+                <p className="text-sm text-slate-400 mb-6">For large operations & groups</p>
+              </div>
+              <ul className="space-y-3 flex-1 mb-6">
+                {["Unlimited locations","Everything in Multi Branch","Unlimited team members","API access","SLA guarantee","On-site training","Custom integrations","White-label options"].map(f => (
+                  <li key={f} className="flex items-start gap-2.5 text-sm">
+                    <CheckCircle2 size={15} className="text-primary shrink-0 mt-0.5" />
+                    <span className="text-slate-300">{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <a href="https://wa.me/254715800397?text=Hi%2C%20I%27d%20like%20to%20discuss%20Enterprise%20pricing%20for%20ShieldPay"
+                target="_blank" rel="noopener noreferrer"
+                className="block text-center bg-primary text-white font-bold py-3.5 rounded-2xl hover:bg-primary/90 transition-all">
+                💬 Talk to us
+              </a>
+            </div>
+          </div>
+
+          <p className="text-center text-sm text-slate-400 mt-8">
+            All plans include a <strong className="text-slate-600">30-day free trial</strong>. No credit card required. Cancel anytime.
+          </p>
+        </div>
+      </section>
+
+      {/* ── ETIMS & KRA SECTION ── */}
+      <section className="py-16 sm:py-20 px-4 sm:px-6 bg-white">
+        <div className="max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            <div>
+              <p className="text-xs font-bold text-primary uppercase tracking-widest mb-3">🏛️ KRA eTIMS Integration</p>
+              <h2 className="text-3xl sm:text-4xl font-black text-slate-900 mb-4">
+                Tax compliance on autopilot
+              </h2>
+              <p className="text-slate-500 leading-relaxed mb-6">
+                When you enable eTIMS, ShieldPay automatically generates and queues electronic tax invoices for every completed payment — in line with KRA requirements. Your records are always ready for filing.
+              </p>
+              <div className="space-y-3">
+                {[
+                  "Auto-generate eTIMS invoices on payment completion",
+                  "KRA-compliant CSV export for quarterly filing",
+                  "VAT calculations included in every report",
+                  "Payee KRA PIN tracking for compliance",
+                  "Audit-ready transaction history always available",
+                ].map(p => (
+                  <div key={p} className="flex items-start gap-2.5 text-sm text-slate-600">
+                    <CheckCircle2 size={14} className="text-primary shrink-0 mt-0.5" />
+                    {p}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="bg-slate-50 rounded-3xl border border-slate-200 p-6">
+              <p className="text-xs font-bold text-slate-400 uppercase mb-4">What we handle for you</p>
+              <div className="space-y-3">
+                {[
+                  { step: "01", label: "Payment completes",    desc: "via M-Pesa or PesaLink"                   },
+                  { step: "02", label: "Receipt auto-created", desc: "with full payment details"                  },
+                  { step: "03", label: "eTIMS invoice queued", desc: "if eTIMS is enabled for your account"      },
+                  { step: "04", label: "KRA report ready",     desc: "download CSV any time for filing"          },
+                ].map(s => (
+                  <div key={s.step} className="flex items-start gap-3">
+                    <span className="text-xs font-black text-primary bg-primary/10 w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5">{s.step}</span>
+                    <div>
+                      <p className="text-sm font-bold text-slate-800">{s.label}</p>
+                      <p className="text-xs text-slate-500">{s.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── FAQ ── */}
       <section className="py-16 sm:py-24 px-4 sm:px-6 bg-slate-50">
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-10">
-            <h2 className="text-3xl sm:text-4xl font-black text-slate-900">Questions</h2>
+            <h2 className="text-3xl sm:text-4xl font-black text-slate-900">Common questions</h2>
           </div>
           <div className="space-y-2">
             {FAQ.map(item => <FaqItem key={item.q} {...item} />)}
+          </div>
+        </div>
+      </section>
+
+      {/* ── ABOUT US ── */}
+      <section id="about" className="py-16 sm:py-24 px-4 sm:px-6 bg-white">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <p className="text-xs font-bold text-primary uppercase tracking-widest mb-3">About Us</p>
+            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 mb-4">
+              We help businesses stop worrying about bills
+            </h2>
+          </div>
+          <div className="grid md:grid-cols-2 gap-10 items-start">
+            <div className="space-y-5 text-slate-600 leading-relaxed">
+              <p>
+                ShieldPay was built out of a simple frustration: <strong className="text-slate-800">Kenyan businesses spend hours every week manually paying bills</strong> — KPLC, fuel, rent, insurance, suppliers — one M-Pesa transaction at a time. A missed payment can shut a kitchen, ground a fleet, or cut off electricity.
+              </p>
+              <p>
+                We built ShieldPay to solve that. <strong className="text-slate-800">Any business, any size, any industry</strong> can connect their payees once and automate every recurring payment. M-Pesa or bank transfer, with approval workflows and receipts generated automatically.
+              </p>
+              <p>
+                We don't hold your money. We integrate with licensed payment rails — <strong className="text-slate-800">KCB Buni for M-Pesa</strong> and <strong className="text-slate-800">Stanbic PesaLink for bank transfers</strong> — and orchestrate payments on your behalf, with your approval, every time.
+              </p>
+              <p>
+                We're built in Kenya, for Kenya. We understand KRA, eTIMS, KPLC paybill numbers, and the realities of running a business here. That's why ShieldPay works the way Kenyan businesses actually operate.
+              </p>
+            </div>
+            <div className="space-y-4">
+              {[
+                { icon: "🛡️", title: "We don't hold funds",         desc: "All payments go directly through KCB Buni and Stanbic PesaLink. We are an orchestration layer, not a bank." },
+                { icon: "🔒", title: "Data protected",              desc: "Compliant with Kenya's Data Protection Act 2019. AES-256 encryption. SOC 2 infrastructure." },
+                { icon: "🏛️", title: "CBK-aligned",                desc: "We operate within CBK payment regulations. All transactions go through licensed PSPs." },
+                { icon: "🇰🇪", title: "Built for Kenya",            desc: "eTIMS, KRA PINs, M-Pesa paybills, PesaLink — built into the core, not bolted on." },
+              ].map(c => (
+                <div key={c.title} className="flex items-start gap-4 bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                  <span className="text-2xl shrink-0">{c.icon}</span>
+                  <div>
+                    <p className="font-bold text-slate-800 text-sm">{c.title}</p>
+                    <p className="text-xs text-slate-500 mt-1 leading-relaxed">{c.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── CONTACT ── */}
+      <section className="py-12 sm:py-16 px-4 sm:px-6 bg-slate-900">
+        <div className="max-w-4xl mx-auto">
+          <div className="grid sm:grid-cols-3 gap-6 text-center sm:text-left">
+            <div>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Talk to us</p>
+              <a href="https://wa.me/254715800397?text=Hi%20ShieldPay%2C%20I%20have%20a%20question"
+                target="_blank" rel="noopener noreferrer"
+                className="flex items-center justify-center sm:justify-start gap-2 text-green-400 hover:text-green-300 font-bold transition-colors">
+                💬 WhatsApp: 0715 800 397
+              </a>
+              <p className="text-slate-500 text-xs mt-1">We reply fast — usually within 30 minutes</p>
+            </div>
+            <div>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Email us</p>
+              <a href="mailto:risewithdion@gmail.com"
+                className="text-primary hover:text-primary/80 font-bold transition-colors">
+                risewithdion@gmail.com
+              </a>
+              <p className="text-slate-500 text-xs mt-1">For support, billing, or partnerships</p>
+            </div>
+            <div>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Legal</p>
+              <div className="space-y-1">
+                <p className="text-slate-400 text-xs">ShieldPay Kenya · Nairobi</p>
+                <p className="text-slate-500 text-xs">CBK-compliant · Kenya DPA 2019</p>
+                <p className="text-slate-500 text-xs">Not a bank or PSP · No funds held</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>

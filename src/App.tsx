@@ -60,6 +60,7 @@ export default function App() {
         <Route path="/reports"       element={<Guard requireBusiness><Reports /></Guard>} />
         <Route path="/reports/:tab"  element={<Guard requireBusiness><Reports /></Guard>} />
         <Route path="/kra"           element={<Guard requireBusiness><KRA /></Guard>} />
+        <Route path="/etims"         element={<Guard requireBusiness><KRA /></Guard>} />
         <Route path="/settings"      element={<Guard requireBusiness><Settings /></Guard>} />
         <Route path="/settings/:tab" element={<Guard requireBusiness><Settings /></Guard>} />
         <Route path="/admin"         element={<SuperGuard><SuperAdmin /></SuperGuard>} />
