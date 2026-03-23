@@ -1,11 +1,57 @@
-node_modules
-dist
+# ── Dependencies ──────────────────────────────────────────────
+node_modules/
+.pnp
+.pnp.js
+
+# ── Build output ──────────────────────────────────────────────
+dist/
+dist-ssr/
+build/
+*.local
+
+# ── Environment files — NEVER commit these ────────────────────
 .env
 .env.local
-.DS_Store
-*.log
+.env.development.local
+.env.test.local
+.env.production.local
+.env.production
+.env.staging
 
-# Windows shortcuts
-*.lnk
-Thumbs.db
+# ── Supabase local secrets ────────────────────────────────────
+supabase/.temp/
+supabase/config.toml
+.supabase/
+
+# ── OS junk ───────────────────────────────────────────────────
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+*.lnk
+desktop.ini
+
+# ── Editor ────────────────────────────────────────────────────
+.vscode/settings.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ── Logs ──────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ── TypeScript ────────────────────────────────────────────────
+*.tsbuildinfo
+
+# ── Misc ──────────────────────────────────────────────────────
+*.zip
+*.tar.gz
