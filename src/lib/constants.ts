@@ -130,3 +130,21 @@ export const CALLBACK_URL      = `https://${SUPABASE_REF}.supabase.co/functions/
 export const PAYMENTS_URL      = `https://${SUPABASE_REF}.supabase.co/functions/v1/payments`;
 export const TRIAL_DAYS        = 30;
 export const ADMIN_WHATSAPP    = "254715800397";
+
+// ─── INDUSTRY_CONFIG — kept for backward compatibility ────────
+export const INDUSTRY_CONFIG: Record<string, { label: string; icon: string; color: string; tagline: string }> = {
+  restaurant:  { label: "Restaurant",   icon: "🍽️", color: "orange", tagline: "KPLC, gas, food suppliers, rent, NHIF" },
+  logistics:   { label: "Logistics",    icon: "🚛", color: "blue",   tagline: "Fuel, insurance, driver payroll" },
+  retail:      { label: "Retail",       icon: "🏪", color: "purple", tagline: "Stock, rent, utilities, staff" },
+  real_estate: { label: "Real Estate",  icon: "🏢", color: "amber",  tagline: "Maintenance, utilities, compliance" },
+  other:       { label: "Other",        icon: "🏷️", color: "slate",  tagline: "Any business that pays recurring bills" },
+};
+
+// ─── SUPPLIER_CATEGORIES_BY_INDUSTRY — kept for backward compat ─
+export const SUPPLIER_CATEGORIES_BY_INDUSTRY: Record<string, string[]> = {
+  restaurant:  ["Food Supplier / Produce","Utilities (KPLC)","Gas / LPG","Rent / Lease","Water Bill","NHIF / NSSF","KRA / Taxes","Insurance","Equipment","Cleaning & Supplies","Marketing","Loan Repayment","Other"],
+  logistics:   ["Fuel / Petroleum","Vehicle Insurance","Tyre & Maintenance","NTSA / Licensing","Driver NSSF / Payroll","Toll / Road Fees","Utilities (KPLC)","KRA / Taxes","Vehicle Loan Repayment","Spare Parts","Tracking / Tech","Other"],
+  retail:      ["Stock / Inventory","Rent / Lease","Utilities (KPLC)","Staff Wages","KRA / Taxes","Insurance","Marketing","Loan Repayment","Other"],
+  real_estate: ["Maintenance","Security","Cleaning","Utilities","KRA / Taxes","Insurance","Loan Repayment","Other"],
+  other:       ["Utilities","Rent","Staff Costs","KRA / Taxes","Insurance","Loan Repayment","Suppliers","Other"],
+};

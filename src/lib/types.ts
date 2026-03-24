@@ -22,6 +22,7 @@ export interface Business {
   kyc_verified: boolean;
   etims_enabled: boolean;
   etims_pin: string | null;
+  etims_cu_serial: string | null;
 }
 
 export interface BusinessMember {

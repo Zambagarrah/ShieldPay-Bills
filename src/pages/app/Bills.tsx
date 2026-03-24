@@ -106,7 +106,7 @@ function NewBillDrawer({
     set("account_override", account);
   }, [f.supplier_id]);
 
-  const cats = SUPPLIER_CATEGORIES_BY_INDUSTRY[industry as IndustryType] ?? [];
+  const cats = SUPPLIER_CATEGORIES_BY_INDUSTRY[industry as string] ?? SUPPLIER_CATEGORIES_BY_INDUSTRY["other"] ?? [];
 
   const canProceed1 = f.supplier_id && f.title.trim() && Number(f.amount) > 0;
   const canProceed2 = f.account_override.trim() && f.start_date;

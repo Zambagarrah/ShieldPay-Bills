@@ -76,7 +76,7 @@ function BillingTab() {
         </div>
         <div className="bg-slate-50 rounded-2xl p-4 space-y-2 text-sm">
           <div className="flex justify-between"><span className="text-slate-500">Monthly</span><span className="font-bold">{current.price ? fmtKES(current.price) : "Custom"}</span></div>
-          <div className="flex justify-between"><span className="text-slate-500">Schedules</span><span className="font-bold">{current.maxSchedules >= 999999 ? "Unlimited" : `Up to ${current.maxSchedules}`}</span></div>
+          <div className="flex justify-between"><span className="text-slate-500">Schedules</span><span className="font-bold">Unlimited</span></div>
           <div className="flex justify-between"><span className="text-slate-500">M-Pesa fee</span><span className="font-bold text-green-600">Included ✓</span></div>
           <div className="flex justify-between"><span className="text-slate-500">PesaLink fee</span><span className="font-bold text-green-600">Included ✓</span></div>
         </div>
@@ -85,7 +85,7 @@ function BillingTab() {
       <div className="card p-6">
         <h3 className="section-title mb-4">Available Plans</h3>
         <div className="grid md:grid-cols-2 gap-4">
-          {(["starter","growth"] as const).map(key => {
+          {(["solo","multi"] as const).map(key => {
             const plan = PLANS[key]; const isCur = business.plan === key;
             return (
               <div key={key} className={clsx("rounded-2xl border-2 p-5 transition-all", isCur ? "border-primary bg-primary/5" : "border-slate-200")}>
@@ -93,7 +93,7 @@ function BillingTab() {
                 <p className="text-3xl font-black mb-1">{fmtKES(plan.price!)}</p>
                 <p className="text-xs text-slate-400 mb-4">/month</p>
                 <div className="space-y-1.5 text-sm text-slate-600">
-                  <p>✓ {plan.maxSchedules} payment schedules</p>
+                  <p>✓ Unlimited payment schedules</p>
                   <p>✓ M-Pesa payments included</p>
                   <p>✓ PesaLink payments included</p>
                   <p>✓ Full approval workflows</p>

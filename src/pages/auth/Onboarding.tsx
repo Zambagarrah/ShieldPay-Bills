@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { Shield, ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { INDUSTRY_CONFIG } from "@/lib/constants";
+import { COMMON_INDUSTRIES } from "@/lib/constants";
 import { clsx } from "@/lib/utils";
-import type { IndustryType } from "@/lib/types";
+
 
 const STEPS = [
   {
@@ -44,7 +44,7 @@ export default function Onboarding() {
   const navigate = useNavigate();
   const { business, loading, refetch } = useAuth();
   const [step, setStep] = useState(0);
-  const [industry, setIndustry] = useState<IndustryType>("restaurant");
+  const [industry, setIndustry] = useState<string>("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -114,20 +114,18 @@ export default function Onboarding() {
             {/* Industry selector */}
             {cur.id === "industry" && (
               <div className="grid grid-cols-2 gap-3 mb-8">
-                {(Object.entries(INDUSTRY_CONFIG) as [IndustryType, any][]).map(([key, cfg]) => (
+                {COMMON_INDUSTRIES.slice(0, 4).map((ind) => (
                   <button
-                    key={key}
-                    onClick={() => setIndustry(key)}
+                    key={ind}
+                    onClick={() => setIndustry(ind)}
                     className={clsx(
                       "flex flex-col items-center gap-2 p-5 rounded-2xl border-2 transition-all",
-                      industry === key
+                      industry === ind
                         ? "border-primary bg-primary/5 shadow-sm"
                         : "border-slate-200 hover:border-slate-300"
                     )}
                   >
-                    <span className="text-3xl">{cfg.icon}</span>
-                    <span className="font-bold text-sm text-slate-700">{cfg.label}</span>
-                    <span className="text-xs text-slate-400 leading-tight">{cfg.tagline.split("—")[0]}</span>
+                    <span className="font-bold text-sm text-slate-700">{ind}</span>
                   </button>
                 ))}
               </div>

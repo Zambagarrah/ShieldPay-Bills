@@ -55,6 +55,6 @@ export function clsx(...classes: (string | undefined | null | false)[]): string 
   return classes.filter(Boolean).join(" ");
 }
 
-export function planAllows(plan: PlanKey, currentCount: number): boolean {
-  return currentCount < PLANS[plan].maxSchedules;
+export function planAllows(_plan: PlanKey, _currentCount: number): boolean {
+  return true; // v5: unlimited schedules on all plans
 }
